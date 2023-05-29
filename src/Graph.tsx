@@ -14,7 +14,7 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +32,7 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -49,6 +49,19 @@ class Graph extends Component<IProps, {}> {
 
       // Add more Perspective configurations here.
       elem.load(this.table);
+      //this attribute inicates we want a yline graph for this task
+      elem.setAttribute('view','y_line');
+      //We specify the attribute on which the graph will be drawn plotted on. 
+      elem.setAttribute('column-pivots','["stock"]');
+      //For x axis we use the timestamp attribute.
+      elem.setAttribute('row-pivots','["timestamp"]');
+      // for Y axis we use the ask price data to plot the stock values.
+      elem.setAttribute('columns','["top_ask_price"]');
+      elem.setAttribute('aggregates',`
+      {"stock":"distinct count",
+      "top_ask_price":"avg",
+      "top_bid_price":"avg",
+      "timestamp":"distinct count"}`);
     }
   }
 

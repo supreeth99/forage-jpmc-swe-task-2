@@ -6,8 +6,13 @@ import './App.css';
 /**
  * State declaration for <App />
  */
+/**
+ * showGraph variable is added to ensure only once the user clicks start streaming
+ * the graph will be shown. 
+ */
 interface IState {
   data: ServerRespond[],
+  showGraph: boolean,
 }
 
 /**
@@ -21,26 +26,48 @@ class App extends Component<{}, IState> {
     this.state = {
       // data saves the server responds.
       // We use this state to parse data down to the child element (Graph) as element property
+      //
       data: [],
+      showGraph: false,
     };
   }
 
   /**
    * Render Graph react component with state.data parse as property data
    */
+  /**
+   * A condition is added to check if the state varible 'showGraph'
+   * is set to true, for us to print the graph on the screen.
+   */
   renderGraph() {
-    return (<Graph data={this.state.data}/>)
+    if (this.state.showGraph){
+      return (<Graph data={this.state.data}/>)
+    }
   }
 
   /**
    * Get new data from server and update the state with the new data
    */
+  /**
+   * We add an interval function which we check for data every 100 milliseconds.
+   * Each time we receive the data from the server, we set the state component
+   * with the server responses. We clear the interval once the count hits 1000.
+   * This way the data updates itself from server without manually calling the function. 
+   */
   getDataFromServer() {
-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
-      // Update the state by creating a new array of data that consists of
-      // Previous data in the state and the new data from server
-      this.setState({ data: [...this.state.data, ...serverResponds] });
-    });
+    let count = 0;
+    const interval = setInterval (()=>{
+      DataStreamer.getData((serverResponds: ServerRespond[]) => {
+        this.setState({
+          showGraph: true,
+          data: serverResponds,
+        });
+      });
+      count++;
+      if(count>1000){
+        clearInterval(interval);
+      }
+    },100);
   }
 
   /**
